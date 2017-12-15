@@ -1,4 +1,7 @@
 
+# Based on the code from DL w/ Python found here:
+# https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/5.3-using-a-pretrained-convnet.ipynb
+
 import os
 import keras
 from keras import models
@@ -56,6 +59,7 @@ model.compile(loss='binary_crossentropy',
               optimizer=optimizers.RMSprop(lr=2e-5),
               metrics=['acc'])
 
+# This gets to ~ 90% validation accuracy
 history = model.fit_generator(
       train_generator,
       steps_per_epoch=100,
@@ -63,3 +67,30 @@ history = model.fit_generator(
       validation_data=validation_generator,
       validation_steps=50,
       verbose=1)
+      
+
+# Fine Tune
+
+conv_base.trainable = True
+
+set_trainable = False
+for layer in conv_base.layers:
+    if layer.name == 'block5_conv1':
+        set_trainable = True
+    if set_trainable:
+        layer.trainable = True
+    else:
+        layer.trainable = False
+        
+        
+model.compile(loss='binary_crossentropy',
+              optimizer=optimizers.RMSprop(lr=1e-5),
+              metrics=['acc'])
+
+# This gets to ~ 93 % validation accuracy
+history = model.fit_generator(
+      train_generator,
+      steps_per_epoch=100,
+      epochs=100,
+      validation_data=validation_generator,
+      validation_steps=50)
